@@ -94,12 +94,12 @@ void showResultAction(){
   programState = RESULT;
   char buff[10];
   dtostrf(resultTime, 1, 2, buff);  
-  lcdPrint("Wynnik",buff);
+  lcdPrint("Wynik",buff);
 }
  
 void loop(){
   laserPinVal = analogRead(LASER_PIN);
-  if(laserPinVal>LASER_THRESHOLD){
+  if(laserPinVal<LASER_THRESHOLD){
     // laser beam is breaken
     laserBeamVisible = false;
   }else{
