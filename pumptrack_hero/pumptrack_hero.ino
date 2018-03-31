@@ -14,7 +14,7 @@ int adc_key_in  = 0;
 #define btnNONE   5
 
 #define LASER_PIN 1
-#define LASER_THRESHOLD 400
+#define LASER_THRESHOLD 600
 
 #define ACTIVATION 0
 #define WAITING_FOR_NEW_MEASURE 1
@@ -106,7 +106,14 @@ void loop(){
     laserBeamVisible = true;
   }
   showLaserBeamStatus();
-  
+  if(programState != ACTIVATION){
+    if(programState == WAITING_FOR_NEW_MEASURE && !laserBeamVisible){
+        startCountingAction();
+    }
+    if(programState == STOP_ENABLED && !laserBeamVisible){
+        showResultAction();
+    }
+  }  
   lcdKey = read_LCD_buttons();
   if(prevLcdKey != lcdKey){
 
@@ -118,15 +125,6 @@ void loop(){
     }
     
     prevLcdKey = lcdKey;
-  }
-
-  if(programState != ACTIVATION){
-    if(programState == WAITING_FOR_NEW_MEASURE && !laserBeamVisible){
-        startCountingAction();
-    }
-    if(programState == STOP_ENABLED && !laserBeamVisible){
-        showResultAction();
-    }
   }
 }
 
