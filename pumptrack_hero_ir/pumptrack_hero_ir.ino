@@ -13,8 +13,8 @@ int adc_key_in  = 0;
 #define btnSELECT 4
 #define btnNONE   5
 
-#define LASER_PIN 1
-#define LASER_THRESHOLD 600
+// TODO: check pin number! 
+#define IR_PIN 2
 
 #define ACTIVATION 0
 #define WAITING_FOR_NEW_MEASURE 1
@@ -23,11 +23,9 @@ int adc_key_in  = 0;
 #define RESULT 4
 
 int programState = ACTIVATION;
-int laserPinVal = 0;
 unsigned long startTime=0;
 unsigned long endTime=0;
 float resultTime=0;
-boolean laserBeamVisible = false;
 
 // read the buttons
 int read_LCD_buttons(){
@@ -47,7 +45,8 @@ int read_LCD_buttons(){
 void setup(){ 
  lcd.begin(16, 2);             
  lcdPrint("Pumptrack Hero!","Reset - start");
- pinMode(LASER_PIN, INPUT); 
+ pinMode(IR_PIN, INPUT_PULLUP);
+ attachInterrupt(digitalPinToInterrupt(IR_PIN), riderDetected, RISING);
 }
 
 void lcdPrint(char firstLine[], char secondLine[]){
@@ -55,16 +54,6 @@ void lcdPrint(char firstLine[], char secondLine[]){
  lcd.print(firstLine);
  lcd.setCursor(0,1);
  lcd.print(secondLine); 
- showLaserBeamStatus();
-}
-
-void showLaserBeamStatus(){
- lcd.setCursor(15,1);
- if(laserBeamVisible){
-  lcd.print("*");
- }else{
-  lcd.print("/");
- }
 }
 
 void resetAction(){
@@ -96,24 +85,19 @@ void showResultAction(){
   dtostrf(resultTime, 1, 2, buff);  
   lcdPrint("Wynik",buff);
 }
- 
-void loop(){
-  laserPinVal = analogRead(LASER_PIN);
-  if(laserPinVal<LASER_THRESHOLD){
-    // laser beam is breaken
-    laserBeamVisible = false;
-  }else{
-    laserBeamVisible = true;
-  }
-  showLaserBeamStatus();
-  if(programState != ACTIVATION){
-    if(programState == WAITING_FOR_NEW_MEASURE && !laserBeamVisible){
+
+void riderDetected(){
+   if(programState != ACTIVATION){
+    if(programState == WAITING_FOR_NEW_MEASURE){
         startCountingAction();
     }
-    if(programState == STOP_ENABLED && !laserBeamVisible){
+    if(programState == STOP_ENABLED){
         showResultAction();
     }
-  }  
+  } 
+}
+ 
+void loop(){
   lcdKey = read_LCD_buttons();
   if(prevLcdKey != lcdKey){
 
