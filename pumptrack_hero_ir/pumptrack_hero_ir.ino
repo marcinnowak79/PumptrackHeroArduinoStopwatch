@@ -13,8 +13,7 @@ int adc_key_in  = 0;
 #define btnSELECT 4
 #define btnNONE   5
 
-// TODO: check pin number! 
-#define IR_PIN 2
+#define IR_PIN 1
 
 #define ACTIVATION 0
 #define WAITING_FOR_NEW_MEASURE 1
@@ -23,6 +22,7 @@ int adc_key_in  = 0;
 #define RESULT 4
 
 int programState = ACTIVATION;
+int laserPinVal = 0;
 unsigned long startTime=0;
 unsigned long endTime=0;
 float resultTime=0;
@@ -45,8 +45,6 @@ int read_LCD_buttons(){
 void setup(){ 
  lcd.begin(16, 2);             
  lcdPrint("Pumptrack Hero!","Reset - start");
- pinMode(IR_PIN, INPUT_PULLUP);
- attachInterrupt(digitalPinToInterrupt(IR_PIN), riderDetected, RISING);
 }
 
 void lcdPrint(char firstLine[], char secondLine[]){
@@ -86,18 +84,22 @@ void showResultAction(){
   lcdPrint("Wynik",buff);
 }
 
-void riderDetected(){
-   if(programState != ACTIVATION){
-    if(programState == WAITING_FOR_NEW_MEASURE){
-        startCountingAction();
+void detectRider(){
+  laserPinVal = analogRead(IR_PIN);
+    if(laserPinVal>600){
+       if(programState != ACTIVATION){
+        if(programState == WAITING_FOR_NEW_MEASURE){
+            startCountingAction();
+        }
+        if(programState == STOP_ENABLED){
+            showResultAction();
+        }
+      } 
     }
-    if(programState == STOP_ENABLED){
-        showResultAction();
-    }
-  } 
 }
  
 void loop(){
+  detectRider();
   lcdKey = read_LCD_buttons();
   if(prevLcdKey != lcdKey){
 
